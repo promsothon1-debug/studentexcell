@@ -1,0 +1,6 @@
+{
+  "name": "Student Excel Score Manager",
+  "description": "An interactive Excel-like student data spreadsheet manager with sorting, searching, score input, total subject calculations, and report export features.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
