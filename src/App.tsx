@@ -5,12 +5,13 @@ import ExcelFormulaBar from './components/ExcelFormulaBar';
 import ExcelStats from './components/ExcelStats';
 import ExcelTable from './components/ExcelTable';
 import StudentCharts from './components/StudentCharts';
+import MonthlySummaryTable from './components/MonthlySummaryTable';
 import ReportCardModal from './components/ReportCardModal';
 import AddStudentModal from './components/AddStudentModal';
 import { Student, SortOrder, SubjectScores } from './types';
 import { getInitialStudents, computeStudentCalculations, computeRankings } from './data';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileSpreadsheet, Eye, BarChart3, RotateCcw } from 'lucide-react';
+import { FileSpreadsheet, Eye, BarChart3, RotateCcw, Table } from 'lucide-react';
 
 export default function App() {
   // Load initial students from LocalStorage or the mock data
@@ -42,8 +43,8 @@ export default function App() {
   // Sorting state
   const [sortOrder, setSortOrder] = useState<SortOrder | null>(null);
 
-  // Active sub-view tab: "sheet" or "charts"
-  const [activeTab, setActiveTab] = useState<'sheet' | 'charts'>('sheet');
+  // Active sub-view tab: "sheet", "charts", or "summary"
+  const [activeTab, setActiveTab] = useState<'sheet' | 'charts' | 'summary'>('sheet');
 
   // Save to local storage on student updates
   useEffect(() => {
@@ -279,7 +280,7 @@ export default function App() {
       {/* Main Dashboard Stats cards */}
       <ExcelStats students={students} />
 
-      {/* Tabs Selector for Grid vs Visual Charts */}
+      {/* Tabs Selector for Grid vs Visual Charts vs Monthly Summary */}
       <div className="px-6 pb-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between" id="tab-nav">
         <div className="flex gap-1.5 bg-slate-200/65 p-1 rounded-lg">
           <button
@@ -293,6 +294,18 @@ export default function App() {
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>តារាងបញ្ជីពិន្ទុ (Spreadsheet)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('summary')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+              activeTab === 'summary'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            id="tab-summary-view"
+          >
+            <Table className="w-4 h-4" />
+            <span>តារាងសរុបរួមប្រចាំខែ (Monthly Summary)</span>
           </button>
           <button
             onClick={() => setActiveTab('charts')}
@@ -309,7 +322,7 @@ export default function App() {
         </div>
 
         <div className="hidden sm:flex items-center gap-2">
-          {focusedCell && (
+          {focusedCell && activeTab === 'sheet' && (
             <div className="text-xs bg-blue-50 text-blue-700 py-1.5 px-3 rounded-lg border border-blue-200 font-medium">
               ក្រឡាសកម្ម៖ <span className="font-mono font-bold">ជួរ {focusedCell.rowIndex + 3}</span>
             </div>
@@ -329,6 +342,8 @@ export default function App() {
             searchedStudentId={searchedStudentId}
             setSearchedStudentId={setSearchedStudentId}
           />
+        ) : activeTab === 'summary' ? (
+          <MonthlySummaryTable students={students} />
         ) : (
           <div className="py-6">
             <StudentCharts students={students} />
