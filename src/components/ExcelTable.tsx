@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trash2, AlertCircle, Sparkles } from 'lucide-react';
+import { Trash2, AlertCircle, Sparkles, CheckSquare, Square, X } from 'lucide-react';
 import { Student, SortField, SortOrder } from '../types';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 interface ExcelTableProps {
   students: Student[];
@@ -8,6 +9,7 @@ interface ExcelTableProps {
   setFocusedCell: (cell: { rowIndex: number; colField: string } | null) => void;
   onUpdateStudentCell: (rowIndex: number, colField: string, value: string) => void;
   onDeleteStudent: (id: string) => void;
+  onDeleteStudents?: (ids: string[]) => void;
   searchedStudentId: string | null;
   setSearchedStudentId: (id: string | null) => void;
 }
@@ -35,13 +37,54 @@ export default function ExcelTable({
   setFocusedCell,
   onUpdateStudentCell,
   onDeleteStudent,
+  onDeleteStudents,
   searchedStudentId,
   setSearchedStudentId
 }: ExcelTableProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [studentsToDeleteModal, setStudentsToDeleteModal] = useState<Student[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
+
+  // Selection handlers
+  const handleToggleSelectAll = () => {
+    if (selectedIds.length === students.length && students.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(students.map((s) => s.id));
+    }
+  };
+
+  const handleToggleSelectRow = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleOpenDeleteSingle = (student: Student) => {
+    setStudentsToDeleteModal([student]);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleOpenDeleteSelected = () => {
+    const selectedStudents = students.filter((s) => selectedIds.includes(s.id));
+    if (selectedStudents.length === 0) return;
+    setStudentsToDeleteModal(selectedStudents);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = (ids: string[]) => {
+    if (onDeleteStudents) {
+      onDeleteStudents(ids);
+    } else {
+      ids.forEach((id) => onDeleteStudent(id));
+    }
+    setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+  };
 
   // Calculations for summary row
   const getSubjectAverage = (field: string) => {
@@ -211,18 +254,44 @@ export default function ExcelTable({
     <div className="flex-1 overflow-auto bg-slate-100 p-4 border-b border-slate-200" id="excel-table-section">
       <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden" ref={tableContainerRef}>
         
-        {/* Quick hint bar */}
-        <div className="bg-slate-50 border-b border-slate-200 py-1.5 px-4 flex items-center justify-between text-[11px] text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span>ចុចពីរដង (Double-Click) ឬសង្កត់ Enter ដើម្បីកែសម្រួលក្រឡា។ ប្រើគ្រាប់ចុចព្រួញ (Arrow Keys) ដើម្បីរំកិលក្រឡា។</span>
+        {/* Selection Bar for Batch Deletion */}
+        {selectedIds.length > 0 ? (
+          <div className="bg-rose-50 border-b border-rose-200 py-2.5 px-4 flex items-center justify-between text-xs animate-in fade-in">
+            <div className="flex items-center gap-2 text-rose-800 font-bold">
+              <CheckSquare className="w-4.5 h-4.5 text-rose-600" />
+              <span>បានជ្រើសរើសសិស្សចំនួន <span className="font-mono text-sm underline">{selectedIds.length}</span> នាក់</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleOpenDeleteSelected}
+                className="bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                id="btn-delete-selected-students"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>លុបសិស្សដែលជ្រើសរើស ({selectedIds.length})</span>
+              </button>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="bg-white hover:bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg border border-slate-300 transition cursor-pointer"
+              >
+                បោះបង់ (Cancel)
+              </button>
+            </div>
           </div>
-          {searchedStudentId && (
-            <span className="text-blue-600 font-bold animate-pulse">
-              បានរកឃើញសិស្សអត្តលេខរៀង!
-            </span>
-          )}
-        </div>
+        ) : (
+          /* Quick hint bar */
+          <div className="bg-slate-50 border-b border-slate-200 py-1.5 px-4 flex items-center justify-between text-[11px] text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>ចុចពីរដង (Double-Click) ឬសង្កត់ Enter ដើម្បីកែសម្រួលក្រឡា។ ប្រើប្រអប់គ្រីស (Checkbox) ដើម្បីជ្រើសរើសលុបសិស្សច្រើននាក់។</span>
+            </div>
+            {searchedStudentId && (
+              <span className="text-blue-600 font-bold animate-pulse">
+                បានរកឃើញសិស្សអត្តលេខរៀង!
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Scrollable sheet container */}
         <div className="overflow-x-auto">
@@ -230,7 +299,7 @@ export default function ExcelTable({
             <thead>
               {/* Excel Column Letters Header Row */}
               <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="w-10 bg-slate-150 text-center text-[10px] font-mono text-slate-400 border-r border-slate-200 select-none py-1">
+                <th className="w-12 bg-slate-150 text-center text-[10px] font-mono text-slate-400 border-r border-slate-200 select-none py-1">
                   &nbsp;
                 </th>
                 {COLUMNS.map((col, index) => (
@@ -248,9 +317,15 @@ export default function ExcelTable({
 
               {/* Data Headers Row */}
               <tr className="bg-blue-600/5 text-slate-700 border-b border-slate-300 font-medium text-xs">
-                {/* Diagonal intersection spacer */}
-                <th className="bg-slate-100 border-r border-slate-200 text-center font-mono text-[10px] text-slate-500 select-none font-bold">
-                  ⚡
+                {/* Select All Checkbox header */}
+                <th className="bg-slate-100 border-r border-slate-200 text-center select-none p-2 w-12">
+                  <input
+                    type="checkbox"
+                    checked={students.length > 0 && selectedIds.length === students.length}
+                    onChange={handleToggleSelectAll}
+                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4"
+                    title="ជ្រើសរើសសិស្សទាំងអស់ / Deselect All"
+                  />
                 </th>
                 
                 {COLUMNS.map((col, index) => (
@@ -267,7 +342,7 @@ export default function ExcelTable({
                   </th>
                 ))}
                 <th className="w-16 py-3 px-2 text-center text-rose-800 select-none bg-rose-50/20 font-bold">
-                  សកម្មភាព
+                  លុប
                 </th>
               </tr>
             </thead>
@@ -275,7 +350,7 @@ export default function ExcelTable({
             <tbody>
               {students.length === 0 ? (
                 <tr>
-                  <td colSpan={COLUMNS.length + 1} className="py-12 text-center text-slate-400 font-medium text-sm">
+                  <td colSpan={COLUMNS.length + 2} className="py-12 text-center text-slate-400 font-medium text-sm">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertCircle className="w-8 h-8 text-slate-300" />
                       <span>គ្មានទិន្នន័យសិស្សទេ។ សូមចុច "បន្ថែមសិស្ស" ដើម្បីបង្កើតថ្មី។</span>
@@ -285,21 +360,32 @@ export default function ExcelTable({
               ) : (
                 students.map((student, rowIndex) => {
                   const isSearched = searchedStudentId === student.id;
+                  const isSelected = selectedIds.includes(student.id);
                   
                   return (
                     <tr 
                       key={student.id} 
                       ref={el => { rowRefs.current[student.id] = el; }}
-                      className={`group hover:bg-slate-50/50 transition-colors border-b border-slate-200 text-xs ${
-                        isSearched 
+                      className={`group transition-colors border-b border-slate-200 text-xs ${
+                        isSelected
+                          ? 'bg-rose-50/80 hover:bg-rose-100/80 font-medium'
+                          : isSearched 
                           ? 'bg-amber-100/60 ring-2 ring-inset ring-amber-400 animate-pulse duration-1000' 
-                          : 'even:bg-slate-50/30'
+                          : 'hover:bg-slate-50/50 even:bg-slate-50/30'
                       }`}
                       id={`row-student-${student.id}`}
                     >
-                      {/* Left Excel Row Number */}
-                      <td className="bg-slate-100 font-mono text-[10px] font-bold text-slate-400 text-center select-none border-r border-slate-200 py-2.5">
-                        {rowIndex + 3}
+                      {/* Left Excel Row Number with Checkbox */}
+                      <td className="bg-slate-100 font-mono text-[10px] font-bold text-slate-500 text-center select-none border-r border-slate-200 py-2 px-1">
+                        <div className="flex items-center justify-center gap-1">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelectRow(student.id)}
+                            className="rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer w-3.5 h-3.5"
+                          />
+                          <span className="text-[10px] text-slate-400">{rowIndex + 3}</span>
+                        </div>
                       </td>
 
                       {COLUMNS.map((col) => {
@@ -413,12 +499,8 @@ export default function ExcelTable({
                       {/* Delete Action button */}
                       <td className="w-16 py-1 px-2 text-center">
                         <button
-                          onClick={() => {
-                            if (confirm(`តើអ្នកពិតជាចង់លុបទិន្នន័យរបស់សិស្សឈ្មោះ "${student.name}" ឬ?`)) {
-                              onDeleteStudent(student.id);
-                            }
-                          }}
-                          className="p-1 hover:bg-rose-100 hover:text-rose-600 active:bg-rose-200 rounded text-slate-400 transition cursor-pointer inline-flex items-center justify-center"
+                          onClick={() => handleOpenDeleteSingle(student)}
+                          className="p-1.5 hover:bg-rose-100 hover:text-rose-600 active:bg-rose-200 rounded text-slate-400 transition cursor-pointer inline-flex items-center justify-center"
                           title="លុបជួរដេកសិស្ស"
                           id={`btn-delete-student-${student.id}`}
                         >
@@ -514,6 +596,14 @@ export default function ExcelTable({
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        studentsToDelete={studentsToDeleteModal}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirmDelete={handleConfirmDelete}
+      />
     </div>
   );
 }

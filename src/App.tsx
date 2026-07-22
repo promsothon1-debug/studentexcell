@@ -171,19 +171,17 @@ export default function App() {
     setActiveTab('sheet');
   };
 
-  // Delete student
+  // Delete student(s)
   const handleDeleteStudent = (id: string) => {
-    const filtered = students.filter(s => s.id !== id);
+    handleDeleteStudents([id]);
+  };
+
+  const handleDeleteStudents = (idsToDelete: string[]) => {
+    const idSet = new Set(idsToDelete);
+    const filtered = students.filter(s => !idSet.has(s.id));
     const reRanked = computeRankings(filtered);
     setStudents(reRanked);
-
-    // Clear focus if focused was deleted
-    if (focusedCell !== null) {
-      const studentIndex = students.findIndex(s => s.id === id);
-      if (focusedCell.rowIndex === studentIndex) {
-        setFocusedCell(null);
-      }
-    }
+    setFocusedCell(null);
   };
 
   // Export spreadsheet data to CSV with UTF-8 BOM so Excel opens Khmer characters correctly
@@ -353,6 +351,7 @@ export default function App() {
             setFocusedCell={setFocusedCell}
             onUpdateStudentCell={handleUpdateStudentCell}
             onDeleteStudent={handleDeleteStudent}
+            onDeleteStudents={handleDeleteStudents}
             searchedStudentId={searchedStudentId}
             setSearchedStudentId={setSearchedStudentId}
           />
