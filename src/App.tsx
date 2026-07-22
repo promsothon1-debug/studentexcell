@@ -9,10 +9,13 @@ import MonthlySummaryTable from './components/MonthlySummaryTable';
 import ReportCardModal from './components/ReportCardModal';
 import AddStudentModal from './components/AddStudentModal';
 import ImportModal from './components/ImportModal';
+import TrackingBook from './components/TrackingBook';
+import RankingTable from './components/RankingTable';
+import HonorRoll from './components/HonorRoll';
 import { Student, SortOrder, SubjectScores } from './types';
 import { getInitialStudents, computeStudentCalculations, computeRankings } from './data';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileSpreadsheet, Eye, BarChart3, RotateCcw, Table } from 'lucide-react';
+import { FileSpreadsheet, Eye, BarChart3, RotateCcw, Table, BookOpen, Award, Sparkles } from 'lucide-react';
 
 export default function App() {
   // Load initial students from LocalStorage or the mock data
@@ -45,8 +48,8 @@ export default function App() {
   // Sorting state
   const [sortOrder, setSortOrder] = useState<SortOrder | null>(null);
 
-  // Active sub-view tab: "sheet", "charts", or "summary"
-  const [activeTab, setActiveTab] = useState<'sheet' | 'charts' | 'summary'>('sheet');
+  // Active sub-view tab: "sheet", "summary", "ranking", "honor", "tracking", or "charts"
+  const [activeTab, setActiveTab] = useState<'sheet' | 'summary' | 'ranking' | 'honor' | 'tracking' | 'charts'>('sheet');
 
   // Save to local storage on student updates
   useEffect(() => {
@@ -317,7 +320,43 @@ export default function App() {
             id="tab-summary-view"
           >
             <Table className="w-4 h-4" />
-            <span>តារាងសរុបរួមប្រចាំខែ (Monthly Summary)</span>
+            <span>តារាងសរុបរួមប្រចាំខែ (Summary)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('ranking')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+              activeTab === 'ranking'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            id="tab-ranking-view"
+          >
+            <Award className="w-4 h-4" />
+            <span>តារាងចំណាត់ថ្នាក់ (Ranking)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('honor')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+              activeTab === 'honor'
+                ? 'bg-white text-amber-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            id="tab-honor-view"
+          >
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>តារាងកិត្តិយស (Honor Roll)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('tracking')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+              activeTab === 'tracking'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            id="tab-tracking-view"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>សៀវភៅតាមដាន (Tracking)</span>
           </button>
           <button
             onClick={() => setActiveTab('charts')}
@@ -357,6 +396,12 @@ export default function App() {
           />
         ) : activeTab === 'summary' ? (
           <MonthlySummaryTable students={students} />
+        ) : activeTab === 'ranking' ? (
+          <RankingTable students={students} />
+        ) : activeTab === 'honor' ? (
+          <HonorRoll students={students} />
+        ) : activeTab === 'tracking' ? (
+          <TrackingBook students={students} initialStudentId={searchedStudentId} />
         ) : (
           <div className="py-6">
             <StudentCharts students={students} />
