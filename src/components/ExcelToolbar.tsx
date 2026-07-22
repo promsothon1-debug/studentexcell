@@ -5,6 +5,7 @@ import {
   Search, 
   UserPlus, 
   Download, 
+  Upload,
   RotateCcw, 
   AlertCircle,
   FileSpreadsheet,
@@ -25,6 +26,7 @@ interface ExcelToolbarProps {
   onSortAlphabetically: () => void;
   sortOrder: SortOrder | null;
   onAddStudent: () => void;
+  onImportClick: () => void;
   onResetData: () => void;
   invalidSearchError: string | null;
 }
@@ -37,6 +39,7 @@ export default function ExcelToolbar({
   onSortAlphabetically,
   sortOrder,
   onAddStudent,
+  onImportClick,
   onResetData,
   invalidSearchError
 }: ExcelToolbarProps) {
@@ -162,6 +165,17 @@ export default function ExcelToolbar({
         >
           <UserPlus className="w-4 h-4 text-blue-600" />
           <span>បន្ថែមសិស្ស</span>
+        </button>
+
+        {/* Import Students from Sheet/Excel Button */}
+        <button
+          onClick={onImportClick}
+          className="bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 active:bg-emerald-200 text-emerald-800 text-sm font-semibold px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+          id="btn-import-students"
+          title="នាំចូលសិស្សពី Excel ឬ Google Sheets"
+        >
+          <Upload className="w-4 h-4 text-emerald-600" />
+          <span>នាំចូលសិស្ស (Import)</span>
         </button>
 
         {/* Unified Export Menu (Excel, MS Word, Google Sheets) */}

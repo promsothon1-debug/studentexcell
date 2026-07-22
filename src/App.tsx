@@ -8,6 +8,7 @@ import StudentCharts from './components/StudentCharts';
 import MonthlySummaryTable from './components/MonthlySummaryTable';
 import ReportCardModal from './components/ReportCardModal';
 import AddStudentModal from './components/AddStudentModal';
+import ImportModal from './components/ImportModal';
 import { Student, SortOrder, SubjectScores } from './types';
 import { getInitialStudents, computeStudentCalculations, computeRankings } from './data';
 import { motion, AnimatePresence } from 'motion/react';
@@ -39,6 +40,7 @@ export default function App() {
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Sorting state
   const [sortOrder, setSortOrder] = useState<SortOrder | null>(null);
@@ -158,6 +160,17 @@ export default function App() {
     setActiveTab('sheet');
   };
 
+  // Import students from Excel / Sheet
+  const handleImportStudents = (importedList: Student[], replace: boolean) => {
+    if (replace) {
+      setStudents(computeRankings(importedList));
+    } else {
+      const merged = [...students, ...importedList];
+      setStudents(computeRankings(merged));
+    }
+    setActiveTab('sheet');
+  };
+
   // Delete student
   const handleDeleteStudent = (id: string) => {
     const filtered = students.filter(s => s.id !== id);
@@ -266,6 +279,7 @@ export default function App() {
         onSortAlphabetically={handleSortAlphabetically}
         sortOrder={sortOrder}
         onAddStudent={() => setShowAddModal(true)}
+        onImportClick={() => setShowImportModal(true)}
         onResetData={handleResetData}
         invalidSearchError={invalidSearchError}
       />
@@ -371,6 +385,15 @@ export default function App() {
             onClose={() => setShowAddModal(false)}
             onAddStudent={handleAddStudent}
             nextSuggestedId={getNextSuggestedId()}
+          />
+        )}
+
+        {/* Import Students Modal */}
+        {showImportModal && (
+          <ImportModal
+            isOpen={showImportModal}
+            onClose={() => setShowImportModal(false)}
+            onImport={handleImportStudents}
           />
         )}
       </AnimatePresence>
