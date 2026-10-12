@@ -91,6 +91,9 @@ export default function ReportCardModal({ student, onClose }: ReportCardModalPro
                 }`}>
                   ភេទ: {student.gender}
                 </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  {student.gradeLevel || 'ថ្នាក់ទី៦'}
+                </span>
               </div>
               <p className="text-xs text-slate-500 font-mono">
                 អត្តលេខសិស្ស: <span className="font-bold text-slate-700">{student.studentId}</span>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Trash2, AlertCircle, Sparkles, CheckSquare, Square, X } from 'lucide-react';
 import { Student, SortField, SortOrder } from '../types';
+import { GRADE_LEVELS } from '../data';
 import DeleteConfirmModal from './DeleteConfirmModal';
 
 interface ExcelTableProps {
@@ -18,17 +19,18 @@ const COLUMNS = [
   { field: 'no', label: 'ល.រ', letter: 'A', width: 'w-14 min-w-[56px]', readOnly: true },
   { field: 'studentId', label: 'អត្តលេខ', letter: 'B', width: 'w-28 min-w-[112px]', readOnly: false },
   { field: 'name', label: 'ឈ្មោះសិស្ស', letter: 'C', width: 'w-44 min-w-[176px]', readOnly: false },
-  { field: 'gender', label: 'ភេទ', letter: 'D', width: 'w-24 min-w-[96px]', readOnly: false },
-  { field: 'khmer', label: 'ភាសាខ្មែរ', letter: 'E', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
-  { field: 'math', label: 'គណិតវិទ្យា', letter: 'F', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
-  { field: 'physics', label: 'រូបវិទ្យា', letter: 'G', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
-  { field: 'chemistry', label: 'គីមីវិទ្យា', letter: 'H', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
-  { field: 'biology', label: 'ជីវវិទ្យា', letter: 'I', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
-  { field: 'english', label: 'អង់គ្លេស', letter: 'J', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
-  { field: 'totalScore', label: 'សរុប', letter: 'K', width: 'w-28 min-w-[112px]', readOnly: true, isComputed: true },
-  { field: 'average', label: 'មធ្យមភាគ', letter: 'L', width: 'w-28 min-w-[112px]', readOnly: true, isComputed: true },
-  { field: 'grade', label: 'និទ្ទេស', letter: 'M', width: 'w-24 min-w-[96px]', readOnly: true, isComputed: true },
-  { field: 'rank', label: 'ចំណាត់ថ្នាក់', letter: 'N', width: 'w-28 min-w-[112px]', readOnly: true, isComputed: true },
+  { field: 'gender', label: 'ភេទ', letter: 'D', width: 'w-20 min-w-[80px]', readOnly: false },
+  { field: 'gradeLevel', label: 'កម្រិតថ្នាក់', letter: 'E', width: 'w-28 min-w-[112px]', readOnly: false },
+  { field: 'khmer', label: 'ភាសាខ្មែរ', letter: 'F', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
+  { field: 'math', label: 'គណិតវិទ្យា', letter: 'G', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
+  { field: 'physics', label: 'រូបវិទ្យា', letter: 'H', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
+  { field: 'chemistry', label: 'គីមីវិទ្យា', letter: 'I', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
+  { field: 'biology', label: 'ជីវវិទ្យា', letter: 'J', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
+  { field: 'english', label: 'អង់គ្លេស', letter: 'K', width: 'w-24 min-w-[96px]', readOnly: false, isScore: true },
+  { field: 'totalScore', label: 'សរុប', letter: 'L', width: 'w-28 min-w-[112px]', readOnly: true, isComputed: true },
+  { field: 'average', label: 'មធ្យមភាគ', letter: 'M', width: 'w-28 min-w-[112px]', readOnly: true, isComputed: true },
+  { field: 'grade', label: 'និទ្ទេស', letter: 'N', width: 'w-24 min-w-[96px]', readOnly: true, isComputed: true },
+  { field: 'rank', label: 'ចំណាត់ថ្នាក់', letter: 'O', width: 'w-28 min-w-[112px]', readOnly: true, isComputed: true },
 ];
 
 export default function ExcelTable({
@@ -311,7 +313,7 @@ export default function ExcelTable({
                   </th>
                 ))}
                 <th className="w-16 bg-slate-100 text-center text-[10px] font-mono text-slate-400 select-none py-1">
-                  O
+                  P
                 </th>
               </tr>
 
@@ -459,6 +461,18 @@ export default function ExcelTable({
                                   <option value="ប្រុស">ប្រុស</option>
                                   <option value="ស្រី">ស្រី</option>
                                 </select>
+                              ) : col.field === 'gradeLevel' ? (
+                                <select
+                                  value={editValue || 'ថ្នាក់ទី៦'}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onBlur={saveEditing}
+                                  autoFocus
+                                  className="absolute inset-0 w-full h-full px-1 border-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs select-none font-sans font-semibold"
+                                >
+                                  {GRADE_LEVELS.map((g) => (
+                                    <option key={g} value={g}>{g}</option>
+                                  ))}
+                                </select>
                               ) : (
                                 <input
                                   type={col.isScore ? 'number' : 'text'}
@@ -487,6 +501,10 @@ export default function ExcelTable({
                                     : 'bg-blue-100 text-blue-700 border border-blue-200'
                                 }`}>
                                   {cellValue}
+                                </span>
+                              ) : col.field === 'gradeLevel' ? (
+                                <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80">
+                                  {cellValue || 'ថ្នាក់ទី៦'}
                                 </span>
                               ) : (
                                 <span>{cellValue}</span>

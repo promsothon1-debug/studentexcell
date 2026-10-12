@@ -38,16 +38,17 @@ export default function ExcelFormulaBar({
       studentId: { col: 'B', title: 'អត្តលេខ' },
       name: { col: 'C', title: 'ឈ្មោះសិស្ស' },
       gender: { col: 'D', title: 'ភេទ' },
-      khmer: { col: 'E', title: 'ភាសាខ្មែរ' },
-      math: { col: 'F', title: 'គណិតវិទ្យា' },
-      physics: { col: 'G', title: 'រូបវិទ្យា' },
-      chemistry: { col: 'H', title: 'គីមីវិទ្យា' },
-      biology: { col: 'I', title: 'ជីវវិទ្យា' },
-      english: { col: 'J', title: 'អង់គ្លេស' },
-      totalScore: { col: 'K', title: 'សរុប' },
-      average: { col: 'L', title: 'មធ្យមភាគ' },
-      grade: { col: 'M', title: 'និទ្ទេស' },
-      rank: { col: 'N', title: 'ចំណាត់ថ្នាក់' }
+      gradeLevel: { col: 'E', title: 'កម្រិតថ្នាក់' },
+      khmer: { col: 'F', title: 'ភាសាខ្មែរ' },
+      math: { col: 'G', title: 'គណិតវិទ្យា' },
+      physics: { col: 'H', title: 'រូបវិទ្យា' },
+      chemistry: { col: 'I', title: 'គីមីវិទ្យា' },
+      biology: { col: 'J', title: 'ជីវវិទ្យា' },
+      english: { col: 'K', title: 'អង់គ្លេស' },
+      totalScore: { col: 'L', title: 'សរុប' },
+      average: { col: 'M', title: 'មធ្យមភាគ' },
+      grade: { col: 'N', title: 'និទ្ទេស' },
+      rank: { col: 'O', title: 'ចំណាត់ថ្នាក់' }
     };
 
     const colInfo = colMap[colField] || { col: '?', title: 'ចម្លែក' };
@@ -65,20 +66,22 @@ export default function ExcelFormulaBar({
       value = student.name;
     } else if (colField === 'gender') {
       value = student.gender;
+    } else if (colField === 'gradeLevel') {
+      value = student.gradeLevel || 'ថ្នាក់ទី៦';
     } else if (['khmer', 'math', 'physics', 'chemistry', 'biology', 'english'].includes(colField)) {
       value = String(student.scores[colField as keyof typeof student.scores] ?? 0);
     } else if (colField === 'totalScore') {
       value = String(student.totalScore);
-      formula = `=SUM(E${excelRow}:J${excelRow})`;
+      formula = `=SUM(F${excelRow}:K${excelRow})`;
     } else if (colField === 'average') {
       value = String(student.average);
-      formula = `=AVERAGE(E${excelRow}:J${excelRow})`;
+      formula = `=AVERAGE(F${excelRow}:K${excelRow})`;
     } else if (colField === 'grade') {
       value = student.grade;
-      formula = `=IF(L${excelRow}>=90,"A",IF(L${excelRow}>=80,"B",IF(L${excelRow}>=70,"C",IF(L${excelRow}>=60,"D",IF(L${excelRow}>=50,"E","F")))))`;
+      formula = `=IF(M${excelRow}>=90,"A",IF(M${excelRow}>=80,"B",IF(M${excelRow}>=70,"C",IF(M${excelRow}>=60,"D",IF(M${excelRow}>=50,"E","F")))))`;
     } else if (colField === 'rank') {
       value = String(student.rank);
-      formula = `=RANK(K${excelRow}, $K$3:$K$${students.length + 2})`;
+      formula = `=RANK(L${excelRow}, $L$3:$L$${students.length + 2})`;
     }
 
     if (formula) {

@@ -33,6 +33,7 @@ export function saveToExcelDatabaseFile(students: Student[], customFileName?: st
     'អត្តលេខ (ID)': s.studentId,
     'ឈ្មោះសិស្ស (Name)': s.name,
     'ភេទ (Gender)': s.gender,
+    'កម្រិតថ្នាក់ (Grade)': s.gradeLevel || 'ថ្នាក់ទី៦',
     'ថ្ងៃខែឆ្នាំកំណើត (DOB)': s.dob || '-',
     'ទីកន្លែងកំណើត (POB)': s.pob || '-',
     'អាណាព្យាបាល (Parent)': s.parentName || '-',
@@ -360,6 +361,7 @@ export async function parseStorageFile(file: File): Promise<{ students: Student[
   let idIdx = headers.findIndex(h => h.includes('អត្តលេខ') || h.includes('id') || h.includes('studentid'));
   let nameIdx = headers.findIndex(h => h.includes('ឈ្មោះ') || h.includes('name') || h.includes('studentname'));
   let genderIdx = headers.findIndex(h => h.includes('ភេទ') || h.includes('gender') || h.includes('sex'));
+  let gradeLevelIdx = headers.findIndex(h => h.includes('កម្រិត') || h.includes('ថ្នាក់') || h.includes('grade'));
   let dobIdx = headers.findIndex(h => h.includes('dob') || h.includes('birth') || h.includes('កំណើត') || h.includes('ថ្ងៃខែ'));
   let pobIdx = headers.findIndex(h => h.includes('pob') || h.includes('កន្លែង') || h.includes('ទីកន្លែងកំណើត'));
   let parentIdx = headers.findIndex(h => h.includes('parent') || h.includes('អាណាព្យាបាល') || h.includes('ឪពុក'));
@@ -399,6 +401,7 @@ export async function parseStorageFile(file: File): Promise<{ students: Student[
 
     const genderVal = String(row[genderIdx] || '').trim();
     const gender = genderVal.includes('ស្រី') || genderVal.toLowerCase().startsWith('f') ? 'ស្រី' : 'ប្រុស';
+    const rawGradeLevel = gradeLevelIdx !== -1 && row[gradeLevelIdx] ? String(row[gradeLevelIdx]).trim() : 'ថ្នាក់ទី៦';
 
     const scores: SubjectScores = {
       khmer: khmerIdx !== -1 ? parseNum(row[khmerIdx]) : 0,
@@ -416,6 +419,7 @@ export async function parseStorageFile(file: File): Promise<{ students: Student[
       studentId: rawId || `ST-${String(parsedStudents.length + 1).padStart(3, '0')}`,
       name: rawName,
       gender,
+      gradeLevel: rawGradeLevel || 'ថ្នាក់ទី៦',
       dob: dobIdx !== -1 && row[dobIdx] ? String(row[dobIdx]).trim() : '',
       pob: pobIdx !== -1 && row[pobIdx] ? String(row[pobIdx]).trim() : '',
       parentName: parentIdx !== -1 && row[parentIdx] ? String(row[parentIdx]).trim() : '',

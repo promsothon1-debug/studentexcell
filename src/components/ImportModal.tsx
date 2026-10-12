@@ -52,6 +52,7 @@ export default function ImportModal({ isOpen, onClose, onImport }: ImportModalPr
     let idIdx = headers.findIndex(h => h.includes('អត្តលេខ') || h.includes('id') || h.includes('studentid'));
     let nameIdx = headers.findIndex(h => h.includes('ឈ្មោះ') || h.includes('name') || h.includes('studentname'));
     let genderIdx = headers.findIndex(h => h.includes('ភេទ') || h.includes('gender') || h.includes('sex'));
+    let gradeLevelIdx = headers.findIndex(h => h.includes('កម្រិត') || h.includes('ថ្នាក់') || h.includes('grade'));
     let khmerIdx = headers.findIndex(h => h.includes('ខ្មែរ') || h.includes('khmer'));
     let mathIdx = headers.findIndex(h => h.includes('គណិត') || h.includes('math'));
     let physicsIdx = headers.findIndex(h => h.includes('រូប') || h.includes('physic'));
@@ -63,12 +64,6 @@ export default function ImportModal({ isOpen, onClose, onImport }: ImportModalPr
     if (idIdx === -1) idIdx = 1;
     if (nameIdx === -1) nameIdx = 2;
     if (genderIdx === -1) genderIdx = 3;
-    if (khmerIdx === -1) khmerIdx = 4;
-    if (mathIdx === -1) mathIdx = 5;
-    if (physicsIdx === -1) physicsIdx = 6;
-    if (chemistryIdx === -1) chemistryIdx = 7;
-    if (biologyIdx === -1) biologyIdx = 8;
-    if (englishIdx === -1) englishIdx = 9;
 
     const results: Omit<Student, 'rank'>[] = [];
 
@@ -93,13 +88,15 @@ export default function ImportModal({ isOpen, onClose, onImport }: ImportModalPr
                      (row[genderIdx] && String(row[genderIdx]).trim().toLowerCase().startsWith('f')) 
                      ? 'ស្រី' : 'ប្រុស';
 
+      const rawGradeLevel = gradeLevelIdx !== -1 && row[gradeLevelIdx] ? String(row[gradeLevelIdx]).trim() : 'ថ្នាក់ទី៦';
+
       const scores: SubjectScores = {
-        khmer: parseScore(row[khmerIdx]),
-        math: parseScore(row[mathIdx]),
-        physics: parseScore(row[physicsIdx]),
-        chemistry: parseScore(row[chemistryIdx]),
-        biology: parseScore(row[biologyIdx]),
-        english: parseScore(row[englishIdx]),
+        khmer: khmerIdx !== -1 ? parseScore(row[khmerIdx]) : 0,
+        math: mathIdx !== -1 ? parseScore(row[mathIdx]) : 0,
+        physics: physicsIdx !== -1 ? parseScore(row[physicsIdx]) : 0,
+        chemistry: chemistryIdx !== -1 ? parseScore(row[chemistryIdx]) : 0,
+        biology: biologyIdx !== -1 ? parseScore(row[biologyIdx]) : 0,
+        english: englishIdx !== -1 ? parseScore(row[englishIdx]) : 0,
       };
 
       const calculations = computeStudentCalculations(scores);
@@ -109,6 +106,7 @@ export default function ImportModal({ isOpen, onClose, onImport }: ImportModalPr
         studentId: rawId || `ST-${String(results.length + 1).padStart(3, '0')}`,
         name: rawName,
         gender,
+        gradeLevel: rawGradeLevel || 'ថ្នាក់ទី៦',
         scores,
         ...calculations
       });

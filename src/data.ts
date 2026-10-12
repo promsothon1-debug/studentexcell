@@ -334,6 +334,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-001',
     name: 'សុខ ជា',
     gender: 'ប្រុស',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-០៣-១២',
     pob: 'បាត់ដំបង',
     parentName: 'សុខ ម៉េង',
@@ -347,6 +348,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-002',
     name: 'ចាន់ ធីតា',
     gender: 'ស្រី',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-០៥-២១',
     pob: 'បាត់ដំបង',
     parentName: 'ចាន់ សុផល',
@@ -360,6 +362,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-003',
     name: 'សេង ហុង',
     gender: 'ប្រុស',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-០១-១៥',
     pob: 'បាត់ដំបង',
     parentName: 'សេង វណ្ណា',
@@ -373,6 +376,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-004',
     name: 'លី ស្រីនី',
     gender: 'ស្រី',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-០៨-១៩',
     pob: 'បាត់ដំបង',
     parentName: 'លី រតនា',
@@ -386,6 +390,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-005',
     name: 'អ៊ុក វណ្ណដា',
     gender: 'ប្រុស',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-០៤-០៥',
     pob: 'បាត់ដំបង',
     parentName: 'អ៊ុក សំអាត',
@@ -399,6 +404,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-006',
     name: 'ម៉ៅ ចន្ថា',
     gender: 'ស្រី',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-១០-៣០',
     pob: 'បាត់ដំបង',
     parentName: 'ម៉ៅ បូរី',
@@ -412,6 +418,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-007',
     name: 'ភិន មុន្នី',
     gender: 'ប្រុស',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-១២-១១',
     pob: 'បាត់ដំបង',
     parentName: 'ភិន សារ៉េត',
@@ -425,6 +432,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-008',
     name: 'ទូច សុជាតា',
     gender: 'ស្រី',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-០៧-១៤',
     pob: 'បាត់ដំបង',
     parentName: 'ទូច វិចិត្រ',
@@ -438,6 +446,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-009',
     name: 'កែវ សិរីវុឌ្ឍ',
     gender: 'ប្រុស',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-០២-២៧',
     pob: 'បាត់ដំបង',
     parentName: 'កែវ សម្បត្តិ',
@@ -451,6 +460,7 @@ export const INITIAL_STUDENTS_RAW = [
     studentId: 'ST-010',
     name: 'ជា សុភ័ក្ត្រ',
     gender: 'ស្រី',
+    gradeLevel: 'ថ្នាក់ទី៦',
     dob: '២០០៩-១១-០៨',
     pob: 'បាត់ដំបង',
     parentName: 'ជា ចិន្តា',
@@ -629,3 +639,13 @@ export const INITIAL_FITNESS_RECORDS: FitnessTestRecord[] = [
     resultGrade: 'ល្អប្រសើរ'
   }
 ];
+
+// All available school grade levels (ថ្នាក់ទី១ ដល់ ថ្នាក់ទី៦)
+export const GRADE_LEVELS = [
+  'ថ្នាក់ទី១',
+  'ថ្នាក់ទី២',
+  'ថ្នាក់ទី៣',
+  'ថ្នាក់ទី៤',
+  'ថ្នាក់ទី៥',
+  'ថ្នាក់ទី៦'
+] as const;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, UserPlus, AlertCircle } from 'lucide-react';
+import { X, UserPlus, AlertCircle, GraduationCap } from 'lucide-react';
 import { Student, SubjectScores } from '../types';
+import { GRADE_LEVELS } from '../data';
 
 interface AddStudentModalProps {
   isOpen: boolean;
@@ -9,20 +10,24 @@ interface AddStudentModalProps {
     studentId: string;
     name: string;
     gender: string;
+    gradeLevel?: string;
     scores: SubjectScores;
   }) => void;
   nextSuggestedId: string;
+  defaultGradeLevel?: string;
 }
 
 export default function AddStudentModal({
   isOpen,
   onClose,
   onAddStudent,
-  nextSuggestedId
+  nextSuggestedId,
+  defaultGradeLevel = 'ថ្នាក់ទី៦'
 }: AddStudentModalProps) {
   const [studentId, setStudentId] = useState('');
   const [name, setName] = useState('');
   const [gender, setGender] = useState('ស្រី'); // Default to Female
+  const [gradeLevel, setGradeLevel] = useState(defaultGradeLevel === 'all' ? 'ថ្នាក់ទី៦' : defaultGradeLevel);
   const [scores, setScores] = useState<SubjectScores>({
     khmer: 0,
     math: 0,
@@ -38,10 +43,11 @@ export default function AddStudentModal({
       setStudentId(nextSuggestedId);
       setName('');
       setGender('ស្រី');
+      setGradeLevel(defaultGradeLevel === 'all' ? 'ថ្នាក់ទី៦' : defaultGradeLevel);
       setScores({ khmer: 0, math: 0, physics: 0, chemistry: 0, biology: 0, english: 0 });
       setError(null);
     }
-  }, [isOpen, nextSuggestedId]);
+  }, [isOpen, nextSuggestedId, defaultGradeLevel]);
 
   if (!isOpen) return null;
 
@@ -73,6 +79,7 @@ export default function AddStudentModal({
       studentId: studentId.trim(),
       name: name.trim(),
       gender,
+      gradeLevel,
       scores
     });
     
@@ -112,9 +119,9 @@ export default function AddStudentModal({
             )}
 
             {/* General Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">អត្តលេខសិស្ស (Student ID) *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">អត្តលេខ (Student ID) *</label>
                 <input
                   type="text"
                   value={studentId}
@@ -134,6 +141,19 @@ export default function AddStudentModal({
                 >
                   <option value="ស្រី">ស្រី (Female)</option>
                   <option value="ប្រុស">ប្រុស (Male)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">កម្រិតថ្នាក់ (Grade) *</label>
+                <select
+                  value={gradeLevel}
+                  onChange={(e) => setGradeLevel(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white font-medium text-blue-700"
+                >
+                  {GRADE_LEVELS.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
                 </select>
               </div>
             </div>

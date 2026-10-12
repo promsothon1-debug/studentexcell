@@ -23,6 +23,7 @@ export interface Student {
   parentPhone?: string; // លេខទូរស័ព្ទ
   preTestScore?: number; // ពិន្ទុតេស្តដើមឆ្នាំ
   postTestScore?: number; // ពិន្ទុតេស្តចុងឆ្នាំ
+  gradeLevel?: string; // កម្រិតថ្នាក់ (e.g., 'ថ្នាក់ទី១', 'ថ្នាក់ទី២', 'ថ្នាក់ទី៣', 'ថ្នាក់ទី៤', 'ថ្នាក់ទី៥', 'ថ្នាក់ទី៦')
 }
 
 export interface TeacherProfile {

@@ -15,9 +15,11 @@ import {
   Check,
   Copy,
   Save,
-  HardDrive
+  HardDrive,
+  GraduationCap
 } from 'lucide-react';
 import { SortOrder, Student } from '../types';
+import { GRADE_LEVELS } from '../data';
 import { exportToExcel, exportToWord, exportToGoogleSheets } from '../utils/exportUtils';
 
 interface ExcelToolbarProps {
@@ -35,6 +37,8 @@ interface ExcelToolbarProps {
   onOpenStorageTab?: () => void;
   hasUnsavedChanges?: boolean;
   activeFileName?: string;
+  selectedGradeLevel?: string;
+  onSelectGradeLevel?: (grade: string) => void;
 }
 
 export default function ExcelToolbar({
@@ -51,7 +55,9 @@ export default function ExcelToolbar({
   onSaveExcelFile,
   onOpenStorageTab,
   hasUnsavedChanges = false,
-  activeFileName = 'គំរូឯកសារផ្ទុកទិន្នន័យសិស្ស_វត្តចែង_ថ្នាក់ទី៦.xlsx'
+  activeFileName = 'គំរូឯកសារផ្ទុកទិន្នន័យសិស្ស_វត្តចែង_ថ្នាក់ទី៦.xlsx',
+  selectedGradeLevel = 'all',
+  onSelectGradeLevel
 }: ExcelToolbarProps) {
   const [localSearch, setLocalSearch] = useState('');
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -152,6 +158,32 @@ export default function ExcelToolbar({
 
       {/* Main Excel Operations */}
       <div className="w-full xl:w-auto flex flex-wrap items-center justify-end gap-2.5">
+        {/* Grade Level Selector (កម្រិតថ្នាក់នីមួយៗ) */}
+        {onSelectGradeLevel && (
+          <div className="flex items-center gap-1.5 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 shadow-xs">
+            <GraduationCap className="w-4 h-4 text-blue-600 shrink-0" />
+            <label htmlFor="select-grade-level" className="text-xs font-bold text-slate-700 whitespace-nowrap">
+              កម្រិតថ្នាក់៖
+            </label>
+            <select
+              id="select-grade-level"
+              value={selectedGradeLevel}
+              onChange={(e) => onSelectGradeLevel(e.target.value)}
+              className="bg-transparent text-xs font-semibold text-blue-800 focus:outline-none cursor-pointer pr-1"
+            >
+              <option value="all">គ្រប់កម្រិតថ្នាក់ទាំងអស់ ({students.length})</option>
+              {GRADE_LEVELS.map((g) => {
+                const count = students.filter(s => (s.gradeLevel || 'ថ្នាក់ទី៦') === g).length;
+                return (
+                  <option key={g} value={g}>
+                    {g} ({count} នាក់)
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        )}
+
         {/* Sort Alphabetically Button */}
         <button
           onClick={onSortAlphabetically}

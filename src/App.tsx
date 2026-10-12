@@ -59,6 +59,14 @@ export default function App() {
   });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
+  // Grade level filter state ('all', 'ថ្នាក់ទី១', 'ថ្នាក់ទី២', ..., 'ថ្នាក់ទី៦')
+  const [selectedGradeLevel, setSelectedGradeLevel] = useState<string>('all');
+
+  // Filter students based on selected grade level
+  const displayedStudents = selectedGradeLevel === 'all'
+    ? students
+    : students.filter(s => (s.gradeLevel || 'ថ្នាក់ទី៦') === selectedGradeLevel);
+
   // Active sub-view tab: "sheet", "summary", "ranking", "honor", "tracking", "charts", or "storage"
   const [activeTab, setActiveTab] = useState<'sheet' | 'summary' | 'ranking' | 'honor' | 'tracking' | 'charts' | 'storage'>('sheet');
 
@@ -78,8 +86,12 @@ export default function App() {
 
   // Handle cell edit save from the table
   const handleUpdateStudentCell = (rowIndex: number, colField: string, value: string) => {
-    const updatedRaw = students.map((student, idx) => {
-      if (idx !== rowIndex) return student;
+    // Find the targeted student in displayedStudents to get their id
+    const targetStudent = displayedStudents[rowIndex];
+    if (!targetStudent) return;
+
+    const updatedRaw = students.map((student) => {
+      if (student.id !== targetStudent.id) return student;
 
       const updatedStudent = { ...student };
 
@@ -103,6 +115,8 @@ export default function App() {
         updatedStudent.name = value.trim();
       } else if (colField === 'gender') {
         updatedStudent.gender = value;
+      } else if (colField === 'gradeLevel') {
+        updatedStudent.gradeLevel = value;
       }
 
       // Recalculate calculations to ensure score stats are valid
@@ -179,6 +193,7 @@ export default function App() {
     studentId: string;
     name: string;
     gender: string;
+    gradeLevel?: string;
     scores: SubjectScores;
   }) => {
     const calculations = computeStudentCalculations(data.scores);
@@ -187,6 +202,7 @@ export default function App() {
       studentId: data.studentId,
       name: data.name,
       gender: data.gender,
+      gradeLevel: data.gradeLevel || (selectedGradeLevel !== 'all' ? selectedGradeLevel : 'ថ្នាក់ទី៦'),
       scores: data.scores,
       ...calculations
     };
@@ -328,6 +344,8 @@ export default function App() {
         onOpenStorageTab={() => setActiveTab('storage')}
         hasUnsavedChanges={hasUnsavedChanges}
         activeFileName={activeFileName}
+        selectedGradeLevel={selectedGradeLevel}
+        onSelectGradeLevel={setSelectedGradeLevel}
       />
 
       {/* Formula Bar */}
@@ -445,7 +463,7 @@ export default function App() {
       <main className="flex-1 flex flex-col">
         {activeTab === 'sheet' ? (
           <ExcelTable
-            students={students}
+            students={displayedStudents}
             focusedCell={focusedCell}
             setFocusedCell={setFocusedCell}
             onUpdateStudentCell={handleUpdateStudentCell}
@@ -507,6 +525,7 @@ export default function App() {
             onClose={() => setShowAddModal(false)}
             onAddStudent={handleAddStudent}
             nextSuggestedId={getNextSuggestedId()}
+            defaultGradeLevel={selectedGradeLevel}
           />
         )}
 
