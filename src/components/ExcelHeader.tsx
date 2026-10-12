@@ -1,7 +1,17 @@
 import React from 'react';
 import { Info, Calendar, HelpCircle } from 'lucide-react';
 
-export default function ExcelHeader() {
+interface ExcelHeaderProps {
+  activeFileName?: string;
+  hasUnsavedChanges?: boolean;
+  onOpenStorageTab?: () => void;
+}
+
+export default function ExcelHeader({
+  activeFileName = 'គំរូឯកសារផ្ទុកទិន្នន័យសិស្ស_វត្តចែង_ថ្នាក់ទី៦.xlsx',
+  hasUnsavedChanges = false,
+  onOpenStorageTab
+}: ExcelHeaderProps) {
   const [showHelp, setShowHelp] = React.useState(false);
 
   return (
@@ -21,12 +31,32 @@ export default function ExcelHeader() {
               ប្រព័ន្ធគ្រប់គ្រងពិន្ទុសិស្សលក្ខណៈ Excel
             </h1>
             <p className="text-xs text-slate-500 font-mono mt-0.5">
-              Student Score Spreadsheet Manager • Geometric Balance Edition
+              Student Score Spreadsheet Manager • File-Based Storage Edition
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-3 text-sm flex-wrap justify-end">
+          {/* Active File Storage Badge */}
+          {onOpenStorageTab && (
+            <button
+              onClick={onOpenStorageTab}
+              className={`flex items-center gap-2 py-1.5 px-3 rounded-lg border text-xs font-mono transition cursor-pointer shadow-xs ${
+                hasUnsavedChanges
+                  ? 'bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+              }`}
+              title="ចុចដើម្បីបើកមជ្ឈមណ្ឌលផ្ទុកទិន្នន័យ (Open Data Storage Hub)"
+              id="header-storage-file-badge"
+            >
+              <span className={`w-2 h-2 rounded-full ${hasUnsavedChanges ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}`}></span>
+              <span className="font-bold">📁 File: {activeFileName}</span>
+              <span className="text-[10px] font-sans px-1.5 py-0.2 rounded bg-white/70">
+                {hasUnsavedChanges ? 'មិនទាន់ Save' : 'បានរក្សាទុក'}
+              </span>
+            </button>
+          )}
+
           <div className="hidden lg:flex items-center gap-2 bg-slate-100 py-1.5 px-3.5 rounded-full font-mono text-xs text-slate-600 border border-slate-200">
             <Calendar className="w-3.5 h-3.5 text-blue-600" />
             <span className="font-semibold text-slate-700">២០២៦-០៧-២០</span>

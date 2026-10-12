@@ -13,7 +13,9 @@ import {
   ExternalLink,
   ChevronDown,
   Check,
-  Copy
+  Copy,
+  Save,
+  HardDrive
 } from 'lucide-react';
 import { SortOrder, Student } from '../types';
 import { exportToExcel, exportToWord, exportToGoogleSheets } from '../utils/exportUtils';
@@ -29,6 +31,10 @@ interface ExcelToolbarProps {
   onImportClick: () => void;
   onResetData: () => void;
   invalidSearchError: string | null;
+  onSaveExcelFile?: () => void;
+  onOpenStorageTab?: () => void;
+  hasUnsavedChanges?: boolean;
+  activeFileName?: string;
 }
 
 export default function ExcelToolbar({
@@ -41,7 +47,11 @@ export default function ExcelToolbar({
   onAddStudent,
   onImportClick,
   onResetData,
-  invalidSearchError
+  invalidSearchError,
+  onSaveExcelFile,
+  onOpenStorageTab,
+  hasUnsavedChanges = false,
+  activeFileName = 'គំរូឯកសារផ្ទុកទិន្នន័យសិស្ស_វត្តចែង_ថ្នាក់ទី៦.xlsx'
 }: ExcelToolbarProps) {
   const [localSearch, setLocalSearch] = useState('');
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -177,6 +187,36 @@ export default function ExcelToolbar({
           <Upload className="w-4 h-4 text-emerald-600" />
           <span>នាំចូលសិស្ស (Import)</span>
         </button>
+
+        {/* Quick Save to Master File Button */}
+        {onSaveExcelFile && (
+          <button
+            onClick={onSaveExcelFile}
+            className={`flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-lg border transition cursor-pointer shadow-xs ${
+              hasUnsavedChanges
+                ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-md animate-pulse'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700'
+            }`}
+            id="btn-toolbar-save-file"
+            title="រក្សាទុកទិន្នន័យទាំងអស់ចូល File Excel"
+          >
+            <Save className="w-4 h-4" />
+            <span>រក្សាទុកក្នុង File {hasUnsavedChanges ? '(កែប្រែ)' : ''}</span>
+          </button>
+        )}
+
+        {/* Data Storage Hub shortcut */}
+        {onOpenStorageTab && (
+          <button
+            onClick={onOpenStorageTab}
+            className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+            id="btn-toolbar-storage-hub"
+            title="បើកមជ្ឈមណ្ឌលផ្ទុកទិន្នន័យ"
+          >
+            <HardDrive className="w-4 h-4 text-indigo-600" />
+            <span className="hidden md:inline">កន្លែងផ្ទុកទិន្នន័យ</span>
+          </button>
+        )}
 
         {/* Unified Export Menu (Excel, MS Word, Google Sheets) */}
         <div className="relative" ref={dropdownRef}>

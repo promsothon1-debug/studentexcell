@@ -12,10 +12,12 @@ import ImportModal from './components/ImportModal';
 import TrackingBook from './components/TrackingBook';
 import RankingTable from './components/RankingTable';
 import HonorRoll from './components/HonorRoll';
+import FileStorageManager from './components/FileStorageManager';
 import { Student, SortOrder, SubjectScores } from './types';
 import { getInitialStudents, computeStudentCalculations, computeRankings } from './data';
+import { saveToExcelDatabaseFile } from './utils/fileStorageUtils';
 import { motion, AnimatePresence } from 'motion/react';
-import { FileSpreadsheet, Eye, BarChart3, RotateCcw, Table, BookOpen, Award, Sparkles } from 'lucide-react';
+import { FileSpreadsheet, Eye, BarChart3, RotateCcw, Table, BookOpen, Award, Sparkles, Database, HardDrive, Save } from 'lucide-react';
 
 export default function App() {
   // Load initial students from LocalStorage or the mock data
@@ -48,13 +50,31 @@ export default function App() {
   // Sorting state
   const [sortOrder, setSortOrder] = useState<SortOrder | null>(null);
 
-  // Active sub-view tab: "sheet", "summary", "ranking", "honor", "tracking", or "charts"
-  const [activeTab, setActiveTab] = useState<'sheet' | 'summary' | 'ranking' | 'honor' | 'tracking' | 'charts'>('sheet');
+  // Storage states
+  const [activeFileName, setActiveFileName] = useState<string>(() => {
+    return localStorage.getItem('excel_storage_filename') || 'គំរូឯកសារផ្ទុកទិន្នន័យសិស្ស_វត្តចែង_ថ្នាក់ទី៦.xlsx';
+  });
+  const [lastSavedTime, setLastSavedTime] = useState<string>(() => {
+    return localStorage.getItem('excel_storage_last_saved') || 'ទើបតែចាប់ផ្តើម';
+  });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
+  // Active sub-view tab: "sheet", "summary", "ranking", "honor", "tracking", "charts", or "storage"
+  const [activeTab, setActiveTab] = useState<'sheet' | 'summary' | 'ranking' | 'honor' | 'tracking' | 'charts' | 'storage'>('sheet');
 
   // Save to local storage on student updates
   useEffect(() => {
     localStorage.setItem('excel_student_scores_v1', JSON.stringify(students));
   }, [students]);
+
+  // Persist storage file name & last saved
+  useEffect(() => {
+    localStorage.setItem('excel_storage_filename', activeFileName);
+  }, [activeFileName]);
+
+  useEffect(() => {
+    localStorage.setItem('excel_storage_last_saved', lastSavedTime);
+  }, [lastSavedTime]);
 
   // Handle cell edit save from the table
   const handleUpdateStudentCell = (rowIndex: number, colField: string, value: string) => {
@@ -96,6 +116,20 @@ export default function App() {
     // Recompute ranks for the entire class after cell update
     const reRanked = computeRankings(updatedRaw);
     setStudents(reRanked);
+    setHasUnsavedChanges(true);
+  };
+
+  // Quick save to master Excel file
+  const handleQuickSaveFile = () => {
+    try {
+      const fileName = activeFileName.endsWith('.xlsx') ? activeFileName : `${activeFileName}.xlsx`;
+      saveToExcelDatabaseFile(students, fileName);
+      const nowStr = new Date().toLocaleTimeString('km-KH');
+      setLastSavedTime(nowStr);
+      setHasUnsavedChanges(false);
+    } catch (e) {
+      console.error('Failed to quick save to file', e);
+    }
   };
 
   // Handle live formula bar updates
@@ -160,6 +194,7 @@ export default function App() {
     // Append and compute rankings across all
     const reRanked = computeRankings([...students, newStudent]);
     setStudents(reRanked);
+    setHasUnsavedChanges(true);
     setActiveTab('sheet');
   };
 
@@ -171,6 +206,7 @@ export default function App() {
       const merged = [...students, ...importedList];
       setStudents(computeRankings(merged));
     }
+    setHasUnsavedChanges(true);
     setActiveTab('sheet');
   };
 
@@ -184,6 +220,7 @@ export default function App() {
     const filtered = students.filter(s => !idSet.has(s.id));
     const reRanked = computeRankings(filtered);
     setStudents(reRanked);
+    setHasUnsavedChanges(true);
     setFocusedCell(null);
   };
 
@@ -269,7 +306,11 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 selection:bg-blue-100 antialiased" id="root-container">
       {/* Excel Header */}
-      <ExcelHeader />
+      <ExcelHeader 
+        activeFileName={activeFileName}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onOpenStorageTab={() => setActiveTab('storage')}
+      />
 
       {/* Excel Operations Toolbar */}
       <ExcelToolbar
@@ -283,6 +324,10 @@ export default function App() {
         onImportClick={() => setShowImportModal(true)}
         onResetData={handleResetData}
         invalidSearchError={invalidSearchError}
+        onSaveExcelFile={handleQuickSaveFile}
+        onOpenStorageTab={() => setActiveTab('storage')}
+        hasUnsavedChanges={hasUnsavedChanges}
+        activeFileName={activeFileName}
       />
 
       {/* Formula Bar */}
@@ -295,12 +340,12 @@ export default function App() {
       {/* Main Dashboard Stats cards */}
       <ExcelStats students={students} />
 
-      {/* Tabs Selector for Grid vs Visual Charts vs Monthly Summary */}
+      {/* Tabs Selector for Grid vs Visual Charts vs Monthly Summary vs Storage */}
       <div className="px-6 pb-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between" id="tab-nav">
-        <div className="flex gap-1.5 bg-slate-200/65 p-1 rounded-lg">
+        <div className="flex gap-1.5 bg-slate-200/65 p-1 rounded-lg overflow-x-auto">
           <button
             onClick={() => setActiveTab('sheet')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer shrink-0 ${
               activeTab === 'sheet'
                 ? 'bg-white text-blue-600 shadow-xs'
                 : 'text-slate-600 hover:text-slate-800'
@@ -312,7 +357,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('summary')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer shrink-0 ${
               activeTab === 'summary'
                 ? 'bg-white text-blue-600 shadow-xs'
                 : 'text-slate-600 hover:text-slate-800'
@@ -324,7 +369,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('ranking')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer shrink-0 ${
               activeTab === 'ranking'
                 ? 'bg-white text-blue-600 shadow-xs'
                 : 'text-slate-600 hover:text-slate-800'
@@ -336,7 +381,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('honor')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer shrink-0 ${
               activeTab === 'honor'
                 ? 'bg-white text-amber-600 shadow-xs'
                 : 'text-slate-600 hover:text-slate-800'
@@ -348,7 +393,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('tracking')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer shrink-0 ${
               activeTab === 'tracking'
                 ? 'bg-white text-blue-600 shadow-xs'
                 : 'text-slate-600 hover:text-slate-800'
@@ -360,7 +405,7 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveTab('charts')}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer shrink-0 ${
               activeTab === 'charts'
                 ? 'bg-white text-blue-600 shadow-xs'
                 : 'text-slate-600 hover:text-slate-800'
@@ -369,6 +414,21 @@ export default function App() {
           >
             <BarChart3 className="w-4 h-4" />
             <span>ក្រាហ្វិកវិភាគ (Analytics Charts)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('storage')}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-md transition cursor-pointer shrink-0 ${
+              activeTab === 'storage'
+                ? 'bg-white text-indigo-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            id="tab-storage-view"
+          >
+            <Database className="w-4 h-4 text-indigo-600" />
+            <span>កន្លែងផ្ទុកទិន្នន័យ (Data Storage)</span>
+            {hasUnsavedChanges && (
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            )}
           </button>
         </div>
 
@@ -402,10 +462,28 @@ export default function App() {
           <HonorRoll students={students} />
         ) : activeTab === 'tracking' ? (
           <TrackingBook students={students} initialStudentId={searchedStudentId} />
-        ) : (
+        ) : activeTab === 'charts' ? (
           <div className="py-6">
             <StudentCharts students={students} />
           </div>
+        ) : (
+          <FileStorageManager
+            students={students}
+            onUpdateStudents={(newStudents) => {
+              setStudents(newStudents);
+              setHasUnsavedChanges(false);
+            }}
+            onResetToSample={() => {
+              setStudents(getInitialStudents());
+              setHasUnsavedChanges(true);
+            }}
+            activeFileName={activeFileName}
+            setActiveFileName={setActiveFileName}
+            lastSavedTime={lastSavedTime}
+            setLastSavedTime={setLastSavedTime}
+            hasUnsavedChanges={hasUnsavedChanges}
+            setHasUnsavedChanges={setHasUnsavedChanges}
+          />
         )}
       </main>
 
